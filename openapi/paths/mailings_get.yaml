@@ -1,0 +1,25 @@
+get:
+  summary: Get a Mailing
+  description: |
+    Gets a mailing record.
+
+    This can be used to poll for the status of a mailing, for example to check to see if all the letters have been correctly added to the mailing.
+  tags:
+    - Mailing
+  operationId: getMailing
+  parameters:
+    - name: mailing_id
+      in: path
+      description: Mailing ID of the mailing you want to cancel
+      required: true
+      schema:
+        $ref: ..\components\schemas\MailingID.yaml
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ..\components\schemas\Mailing--printing.yaml
+    '404':
+      description: Mailing not found

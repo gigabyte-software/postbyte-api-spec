@@ -1,84 +1,73 @@
 openapi: 3.0.2
 info:
   version: 1.0.0
-  title: Example.com
-  termsOfService: 'https://example.com/terms/'
+  title: PostByte API Docs
   contact:
-    email: contact@example.com
-    url: 'http://example.com/contact'
+    email: hello@gigabyte.software
+    url: 'http://postbyte.co.uk/contact'
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
   x-logo:
     url: 'https://redocly.github.io/openapi-template/logo.png'
   description: >
-    This is an **example** API to demonstrate features of OpenAPI specification
-
     # Introduction
 
-    This API definition is intended to to be a good starting point for
-    describing your API in 
+    This is the documentation PostByte API documentation for integration to allow mailings of letters to be added to
+    PostByte for a user to then login to PostByte to review the letters that will be sent and trigger the mailing to
+    sent via post.
 
-    [OpenAPI/Swagger
-    format](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md).
-
-    It also demonstrates features of
-    [create-openapi-repo](https://github.com/Redocly/create-openapi-repo) tool
-    and 
-
-    [Redoc](https://github.com/Redocly/Redoc) documentation engine. So beyond
-    the standard OpenAPI syntax we use a few 
-
-    [vendor
-    extensions](https://github.com/Redocly/Redoc/blob/master/docs/redoc-vendor-extensions.md).
+    The API has been designed to make it easy to integrate with a system that is using asynchronous processing to
+    add the letters. For example the [/mailings/{mailing_id}/letters](/#operation/addLetter) resource is idempotent,
+    so re-tries are safe and it's impossible for duplicate letters to be sent.
 
 
-    # OpenAPI Specification
+    There are two main resources:
 
-    The goal of The OpenAPI Specification is to define a standard,
-    language-agnostic interface to REST APIs which
+      | Resource | Description                                                                         |
+      | -------- | ----------------------------------------------------------------------------------- |
+      | Mailing  | the mailing resource allows you to track the status of a group of letters           |
+      | Letters  | these are the actual letters and addresses information for each letter in a mailing |
 
-    allows both humans and computers to discover and understand the capabilities
-    of the service without access to source
+    **To Send a Mailing**
 
-    code, documentation, or through network traffic inspection. When properly
-    defined via OpenAPI, a consumer can 
+    1. First you must create a mailing record by performing a POST request to [/mailings](/#operation/createMailing).
+    You will specify in this request the number of letters that are to be sent in this mailing. This will return
+    JSON containing a `mailing_id`.
 
-    understand and interact with the remote service with a minimal amount of
-    implementation logic. Similar to what
+    2. Now you must add the exact number of letters to the mailing that you specified when you created the mailing
+    record. You do this by performing multiple POST requests to [/mailings/{mailing_id}]/letters](/#operation/addLetter)
+    . Both the PDF file (base64 encoded) and the recipient information is supplied in these requests.
 
-    interfaces have done for lower-level programming, OpenAPI removes the
-    guesswork in calling the service.
+    3. Once the correct number of letters have been added to the mailing the status of the mailing will change from
+    `Awaiting Letters` to `Awaiting Confirmation`. The mailing will then be visible in the user's PostByte portal and
+    they will receive an email notification telling them they have a mailing ready for review and sending.
+
+    4. Once the user has reviewed the mailing and confirmed that they want to send it, then the mailing will go into a
+    status of 'Pending printing' for 3 hours. While in this state the mailing can still be cancelled, either through
+    the users portal, or by performing a post request to [/mailings/{mailing_id}/cancel](/#operation/cancelMailing).
 externalDocs:
   description: Find out how to create a GitHub repo for your OpenAPI definition.
   url: 'https://github.com/Rebilly/generator-openapi-repo'
 tags:
-  - name: Echo
-    description: Example echo operations
-  - name: User
-    description: Operations about user
+  - name: Mailing
+    description: Mailing is a collection of letters to be sent. The Mailing resource is used to track the sending of a mailing
+  - name: Letter
+    description: Letters are individually added to a Mailing.
 servers:
-  - url: 'http://example.com/api/v1'
-  - url: 'https://example.com/api/v1'
+  - url: 'http://api.postbyte.co.uk/v1'
 paths:
-  '/users/{username}':
-    $ref: 'paths\users@{username}.yaml'
-  /echo:
-    $ref: paths\echo.yaml
+  /mailings:
+    $ref: 'paths\mailings.yaml'
+  /mailings/{mailing_id}:
+    $ref: 'paths\mailings_get.yaml'
+  /mailings/{mailing_id}/cancel:
+    $ref: 'paths\mailings@cancel.yaml'
+  '/mailings/{mailing_id}/letters':
+    $ref: 'paths\letters.yaml'
 components:
   securitySchemes:
-    main_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: 'http://example.com/api/oauth/dialog'
-          scopes:
-            'read:users': read users info
-            'write:users': modify or remove users
     api_key:
       type: apiKey
       in: header
       name: api_key
-    basic_auth:
-      type: http
-      scheme: basic

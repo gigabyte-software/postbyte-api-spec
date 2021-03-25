@@ -1,0 +1,13 @@
+type: object
+properties:
+  number_of_letters:
+    description: Specify the number of letters in the mailing
+    type: number
+    example: 25
+  block:
+    description: Supply the name of the block or development that this mailing is being sent to
+    type: string
+    example: Twin House Resdients Limited
+required:
+  - number_of_letters
+  - block

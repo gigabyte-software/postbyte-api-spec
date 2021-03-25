@@ -1,0 +1,40 @@
+post:
+  summary: Add a Letter
+  description: |
+    This adds a single letter to a mailing that must have been created previously.
+
+    Requests to this resource are idempotent, so if you submit an identical request multiple times then it will assume that is a single letter, it won't send duplicates.
+  tags:
+    - Letter
+  operationId: addLetter
+  parameters:
+    - name: mailing_id
+      in: path
+      description: Mailing ID of the mailing you want to add a letter to
+      required: true
+      schema:
+        $ref: ..\components\schemas\MailingID.yaml
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ..\components\schemas\Letter.yaml
+    '404':
+      description: Mailing not found
+    '400':
+      description: |
+        | Error Message           | Description                                                                        |
+        | ----------------------- | ---------------------------------------------------------------------------------- |
+        | PDF file cannot be read | Please ensure that you have Base64 encoded the pdf file contents.                  |
+        | Postcode Invalid        | Postcode must match a valid UK or IE postcode                                      |
+        | Missing propertiesc     | The following properties must be supplied: name, address_line_1, postcode, pdf_file|
+        | Mailing cancelled       | You cannot add letters to a mailing that has a cancelled status                    |
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: ..\components\schemas\Letter.yaml
+    description: Mailing payload
+    required: true
