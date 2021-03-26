@@ -13,13 +13,13 @@ get:
       description: Mailing ID of the mailing you want to cancel
       required: true
       schema:
-        $ref: ..\components\schemas\MailingID.yaml
+        $ref: ../components/schemas/MailingID.yaml
   responses:
     '200':
       description: OK
       content:
         application/json:
           schema:
-            $ref: ..\components\schemas\Mailing--printing.yaml
+            $ref: ../components/schemas/Mailing--printing.yaml
     '404':
       description: Mailing not found

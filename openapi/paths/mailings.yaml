@@ -10,11 +10,11 @@ post:
       content:
         application/json:
           schema:
-            $ref: ..\components\schemas\Mailing--new.yaml
+            $ref: ../components/schemas/Mailing--new.yaml
   requestBody:
     content:
       application/json:
         schema:
-          $ref: ..\components\schemas\MailingRequest.yaml
+          $ref: ../components/schemas/MailingRequest.yaml
     description: Mailing payload
     required: true

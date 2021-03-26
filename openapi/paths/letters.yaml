@@ -13,14 +13,14 @@ post:
       description: Mailing ID of the mailing you want to add a letter to
       required: true
       schema:
-        $ref: ..\components\schemas\MailingID.yaml
+        $ref: ../components/schemas/MailingID.yaml
   responses:
     '200':
       description: OK
       content:
         application/json:
           schema:
-            $ref: ..\components\schemas\Letter.yaml
+            $ref: ../components/schemas/Letter.yaml
     '404':
       description: Mailing not found
     '400':
@@ -35,6 +35,6 @@ post:
     content:
       application/json:
         schema:
-          $ref: ..\components\schemas\Letter.yaml
+          $ref: ../components/schemas/Letter.yaml
     description: Mailing payload
     required: true
