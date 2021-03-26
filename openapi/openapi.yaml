@@ -58,13 +58,13 @@ servers:
   - url: 'http://api.postbyte.co.uk/v1'
 paths:
   /mailings:
-    $ref: 'paths\mailings.yaml'
+    $ref: 'paths/mailings.yaml'
   /mailings/{mailing_id}:
-    $ref: 'paths\mailings_get.yaml'
+    $ref: 'paths/mailings_get.yaml'
   /mailings/{mailing_id}/cancel:
-    $ref: 'paths\mailings@cancel.yaml'
+    $ref: 'paths/mailings@cancel.yaml'
   '/mailings/{mailing_id}/letters':
-    $ref: 'paths\letters.yaml'
+    $ref: 'paths/letters.yaml'
 components:
   securitySchemes:
     api_key:
