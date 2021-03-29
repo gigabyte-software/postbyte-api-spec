@@ -54,11 +54,11 @@ info:
 externalDocs:
   description: Find out how to create a GitHub repo for your OpenAPI definition.
   url: 'https://github.com/Rebilly/generator-openapi-repo'
-tags:
-  - name: Mailing
-    description: Mailing is a collection of letters to be sent. The Mailing resource is used to track the sending of a mailing
-  - name: Letter
-    description: Letters are individually added to a Mailing.
+#tags:
+#  - name: Mailing
+#    description: Mailing is a collection of letters to be sent. The Mailing resource is used to track the sending of a mailing
+#  - name: Letter
+#    description: Letters are individually added to a Mailing.
 servers:
   - url: 'http://api.postbyte.co.uk/v1'
 paths:

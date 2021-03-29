@@ -5,8 +5,6 @@ post:
 
     Once a mailing is in the 'Ready for Sending' the user must login to the web portal to review and send the mailing.
     Triggering the actual send cannot be done directly from the API.
-  tags:
-    - Mailing
   operationId: confirmMailing
   parameters:
     - name: mailing_id

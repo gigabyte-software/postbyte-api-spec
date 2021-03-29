@@ -3,9 +3,9 @@ post:
   description: |
     This adds a single letter to a mailing that must have been created previously.
 
-    Requests to this resource are idempotent, so if you submit an identical request multiple times then it will assume that is a single letter, it won't send duplicates.
-  tags:
-    - Letter
+    Requests to this resource are idempotent, so if you submit an identical request multiple times then it will assume
+    that is a single letter, it won't send duplicates. If you submit the same PDF file, with the same recipient info
+    then you will get a `409 - Letter has already been added` response.
   operationId: addLetter
   parameters:
     - name: mailing_id
@@ -21,7 +21,7 @@ post:
         application/json:
           schema:
             $ref: ../components/schemas/Letter--response.yaml
-    '200':
+    '409':
       description: Letter has already been added
     '404':
       description: Mailing not found

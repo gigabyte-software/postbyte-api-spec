@@ -1,8 +1,6 @@
 post:
   summary: Start a Mailing
   description: This is the first request you will want to make when sending a mailing. This will create a new mailing and return the ID so that letters can be added to the mailing for sending
-  tags:
-    - Mailing
   operationId: createMailing
   responses:
     '200':
