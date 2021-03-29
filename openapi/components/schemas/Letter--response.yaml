@@ -39,7 +39,8 @@ properties:
     example: United Kingdom
   time_created:
     description: Date and time the letter was added to the system
-    type: date
+    type: string
+    format: datetime
     example: 2021-06-01 18:56:02
   pdf_file_id:
     description: ID of the PDF file containing the letter
