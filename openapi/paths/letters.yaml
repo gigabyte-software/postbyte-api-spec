@@ -15,12 +15,14 @@ post:
       schema:
         $ref: ../components/schemas/MailingID.yaml
   responses:
-    '200':
+    '201':
       description: OK
       content:
         application/json:
           schema:
             $ref: ../components/schemas/Letter--response.yaml
+    '200':
+      description: Letter has already been added
     '404':
       description: Mailing not found
     '400':
