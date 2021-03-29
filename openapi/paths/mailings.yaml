@@ -15,6 +15,6 @@ post:
     content:
       application/json:
         schema:
-          $ref: ../components/schemas/MailingRequest.yaml
+          $ref: ../components/schemas/Mailing--request.yaml
     description: Mailing payload
     required: true

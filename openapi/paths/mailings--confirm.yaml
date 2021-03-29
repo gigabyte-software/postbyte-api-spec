@@ -1,0 +1,24 @@
+post:
+  summary: Confirm a Mailing
+  description: |
+    Sets the status of a mailing from `Awaiting Confirmation` to `Ready for Sending`
+
+    Once a mailing is in the 'Ready for Sending' the user must login to the web portal to review and send the mailing.
+    Triggering the actual send cannot be done directly from the API.
+  tags:
+    - Mailing
+  operationId: confirmMailing
+  parameters:
+    - name: mailing_id
+      in: path
+      description: Mailing ID of the mailing you want to confirm
+      required: true
+      schema:
+        $ref: ../components/schemas/MailingID.yaml
+  responses:
+    '200':
+      description: OK
+    '400':
+      description: Still awaiting letters for mailing
+    '404':
+      description: Mailing not found
