@@ -4,8 +4,6 @@ post:
     Sets the status of a mailing to cancelled so that it cannot be sent.
 
     This can be done upto 3 hours after the sending has been triggered, when the mailing is in 'Pending Printing' status
-  tags:
-    - Mailing
   operationId: cancelMailing
   parameters:
     - name: mailing_id
@@ -13,7 +11,7 @@ post:
       description: Mailing ID of the mailing you want to cancel
       required: true
       schema:
-        $ref: ..\components\schemas\MailingID.yaml
+        $ref: ../components/schemas/MailingID.yaml
   responses:
     '200':
       description: OK

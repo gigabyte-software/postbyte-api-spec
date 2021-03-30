@@ -3,9 +3,9 @@ post:
   description: |
     This adds a single letter to a mailing that must have been created previously.
 
-    Requests to this resource are idempotent, so if you submit an identical request multiple times then it will assume that is a single letter, it won't send duplicates.
-  tags:
-    - Letter
+    Requests to this resource are idempotent, so if you submit an identical request multiple times then it will assume
+    that is a single letter, it won't send duplicates. If you submit the same PDF file, with the same recipient info
+    then you will get a `409 - Letter has already been added` response.
   operationId: addLetter
   parameters:
     - name: mailing_id
@@ -13,14 +13,16 @@ post:
       description: Mailing ID of the mailing you want to add a letter to
       required: true
       schema:
-        $ref: ..\components\schemas\MailingID.yaml
+        $ref: ../components/schemas/MailingID.yaml
   responses:
-    '200':
+    '201':
       description: OK
       content:
         application/json:
           schema:
-            $ref: ..\components\schemas\Letter.yaml
+            $ref: ../components/schemas/Letter--response.yaml
+    '409':
+      description: Letter has already been added
     '404':
       description: Mailing not found
     '400':
@@ -29,12 +31,12 @@ post:
         | ----------------------- | ---------------------------------------------------------------------------------- |
         | PDF file cannot be read | Please ensure that you have Base64 encoded the pdf file contents.                  |
         | Postcode Invalid        | Postcode must match a valid UK or IE postcode                                      |
-        | Missing propertiesc     | The following properties must be supplied: name, address_line_1, postcode, pdf_file|
+        | Missing properties      | The following properties must be supplied: name, address_line_1, postcode, pdf_file|
         | Mailing cancelled       | You cannot add letters to a mailing that has a cancelled status                    |
   requestBody:
     content:
       application/json:
         schema:
-          $ref: ..\components\schemas\Letter.yaml
+          $ref: ../components/schemas/Letter.yaml
     description: Mailing payload
     required: true
