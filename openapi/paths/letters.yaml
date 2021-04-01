@@ -40,3 +40,25 @@ post:
           $ref: ../components/schemas/Letter.yaml
     description: Mailing payload
     required: true
+
+get:
+  summary: View letters for a mailing
+  description: |
+    Returns information about the letters of a given mailing
+  operationId: getLetters
+  parameters:
+    - name: mailing_id
+      in: path
+      description: ID of the Mailing the letters belong to
+      required: true
+      schema:
+        $ref: ../components/schemas/MailingID.yaml
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Letters--response.yaml
+    '404':
+      description: Mailing not found
