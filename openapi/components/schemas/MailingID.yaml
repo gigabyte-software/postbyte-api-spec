@@ -1,4 +1,0 @@
-description: Mailing ID of the mailing you want to add a letter to
-type: string
-format: uuid
-example: bb37eff0-e1f0-4a66-92d7-603019b784f4

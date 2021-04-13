@@ -5,4 +5,5 @@
       <PhpCSConfiguration tool_path="/var/www/vagrant/hydra/bin/phpcs" />
     </phpcs_settings>
   </component>
+  <component name="PhpProjectSharedConfiguration" php_language_level="5.5.0" />
 </project>
