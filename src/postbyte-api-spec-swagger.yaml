@@ -4,9 +4,9 @@ info:
   description:  >
     # Introduction
 
-    This is the PostByte API documentation. The PostByte API integrates with 
+    This is the PostByte API documentation. The PostByte API integrates with
     PostByte, a service which can be used to create groups of letters called
-    mailings. The API user can then review these mailings and then use PostByte 
+    mailings. The API user can then review these mailings and then use PostByte
     to send all the letters in the mailing by post.
 
 
@@ -63,7 +63,7 @@ servers:
 paths:
   /mailings:
     post:
-      tags: 
+      tags:
         - Mailing
       summary: Create a Mailing
       description: This is the first request you will want to make when sending a mailing. This will create a new mailing and return the ID so that letters can be added to the mailing for sending
@@ -89,12 +89,12 @@ paths:
         - ApiTokenAuth: []
   /mailings/{mailing_id}:
     get:
-      tags: 
+      tags:
         - Mailing
       summary: Get a Mailing
       description:
         Gets a mailing record.
-    
+
         This can be used to poll for the status of a mailing, for example to check to see if all the letters have been correctly added to the mailing.
       operationId: getMailing
       parameters:
@@ -103,26 +103,26 @@ paths:
           description: Mailing ID of the mailing you want to cancel
           required: true
           schema:
-            $ref: '#/components/schemas/MailingPrinting'
+            $ref: '#/components/schemas/MailingID'
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MailingID'
+                $ref: '#/components/schemas/Mailing'
         '404':
           description: Mailing not found
       security:
         - ApiTokenAuth: []
   /mailings/{mailing_id}/confirm:
     post:
-      tags: 
+      tags:
         - Mailing
       summary: Confirm a Mailing
       description: |
         Sets the status of a mailing from `Awaiting Confirmation` to `Ready for Sending`
-    
+
         Once a mailing is in the 'Ready for Sending' the user must login to the web portal to review and send the mailing.
         Triggering the actual send cannot be done directly from the API.
       operationId: confirmMailing
@@ -144,12 +144,12 @@ paths:
         - ApiTokenAuth: []
   /mailings/{mailing_id}/cancel:
     post:
-      tags: 
+      tags:
         - Mailing
       summary: Cancel a Mailing
       description: |
         Sets the status of a mailing to cancelled so that it cannot be sent.
-    
+
         This can be done upto 3 hours after the sending has been triggered, when the mailing is in 'Pending Printing' status
       operationId: cancelMailing
       parameters:
@@ -168,12 +168,12 @@ paths:
         - ApiTokenAuth: []
   /mailings/{mailing_id}/letters:
     post:
-      tags: 
+      tags:
         - Letter
       summary: Add a Letter
       description: |
         This adds a single letter to a mailing that must have been created previously.
-    
+
         Requests to this resource are idempotent, so if you submit an identical request multiple times then it will assume
         that is a single letter, it won't send duplicates. If you submit the same PDF file, with the same recipient info
         then you will get a `409 - Letter has already been added` response.
@@ -214,7 +214,7 @@ paths:
       security:
         - ApiTokenAuth: []
     get:
-      tags: 
+      tags:
         - Letter
       summary: View letters for a mailing
       description: |

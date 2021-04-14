@@ -1,14 +1,11 @@
 
-### Demo of Swagger UI with Webpack.
-
-This `webpack-getting-started` sample is for reference only.
-
-It includes CSS and OAuth configuration.
-
-`_sample_package.json` is a placeholder sample. You should rename this file, per `Usage` section below, and you should also verify and update this sample's `@latest` compared to the `swagger-ui@latest`
-
+### PostByte API Specification
 
 #### Usage
-    rename `_sample_package.json` to `package.json`
+
     npm install
     npm start
+
+It worked fine for me using node version 15.3.0 and npm version 7.0.14. 
+
+This specification is based on the `webpack-getting-started` sample.
