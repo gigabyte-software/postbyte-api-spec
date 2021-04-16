@@ -6,6 +6,7 @@ const spec = require('./postbyte-api-spec-swagger.yaml');
 const ui = SwaggerUI({
   spec,
   dom_id: '#swagger',
+  deepLinking: true,
 });
 
 ui.initOAuth({
