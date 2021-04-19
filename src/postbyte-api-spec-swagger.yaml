@@ -1,0 +1,458 @@
+openapi: 3.0.2
+info:
+  title: PostByte API Docs
+  description:  >
+    # Introduction
+
+    This is the PostByte API documentation. The PostByte API integrates with
+    PostByte, a service which can be used to create groups of letters called
+    mailings. The API user can then review these mailings and then use PostByte
+    to send all the letters in the mailing by post.
+
+
+    The API has been designed to make it easy to integrate with a system that is using asynchronous processing to
+    add the letters. For example the [/mailings/{mailing_id}/letters](/#Letter/addLetter) resource is idempotent,
+    so re-tries are safe and it's impossible for duplicate letters to be sent.
+
+
+    There are two main resources:
+
+      | Resource | Description                                                                         |
+      | -------- | ----------------------------------------------------------------------------------- |
+      | Mailing  | the mailing resource allows you to track the status of a group of letters           |
+      | Letters  | these are the actual letters and addresses information for each letter in a mailing |
+
+    **To Send a Mailing**
+
+    1. First you must create a mailing record by performing a POST request to [/mailings](/#Mailing/createMailing).
+    You will specify in this request the number of letters that are to be sent in this mailing. This will return
+    JSON containing a `mailing_id`.
+
+    2. Now you must add letters to the mailing. You do this by performing multiple POST requests
+    to [/mailings/{mailing_id}/letters](/#Letter/addLetter). Both the PDF file (base64 encoded) and the recipient
+    information is supplied in these requests.
+
+    3. Once the correct number of letters have been added to the mailing the status of the mailing will change from
+    `Awaiting Letters` to `Awaiting Confirmation`.
+
+    4. You must now submit a request to [/mailings/{mailing_id}/confirm](/#Mailing/confirmMailing) and if you have
+    added the number of mailings that you specified when you created the initial mailing record then the status will
+    change from `Awaiting Confirmation` to `Ready to Send`. The mailing will then be visible in the user's PostByte
+    portal and they will receive an email notification telling them they have a mailing ready for review and sending.
+
+    4. Once the user has reviewed the mailing and confirmed that they want to send it, then the mailing will go into a
+    status of 'Pending Printing' for 3 hours. While in this state the mailing can still be cancelled, either through
+    the users portal, or by performing a post request to [/mailings/{mailing_id}/cancel](/#Mailing/cancelMailing).
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: hello@gigabyte.software
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+tags:
+  - name: Mailing
+    description: Mailing is a collection of letters to be sent. The Mailing resource is used to track the sending of a mailing
+  - name: Letter
+    description: Letters are individually added to a Mailing.
+servers:
+  - url: 'http://api.postbyte.co.uk/v1'
+paths:
+  /mailings:
+    post:
+      tags:
+        - Mailing
+      summary: Create a Mailing
+      description: This is the first request you will want to make when sending a mailing. This will create a new mailing and return the ID so that letters can be added to the mailing for sending
+      operationId: createMailing
+      requestBody:
+        description: Mailing payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Mailing'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Mailing'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailingNew'
+      security:
+        - ApiTokenAuth: []
+  /mailings/{mailing_id}:
+    get:
+      tags:
+        - Mailing
+      summary: Get a Mailing
+      description:
+        Gets a mailing record.
+
+        This can be used to poll for the status of a mailing, for example to check to see if all the letters have been correctly added to the mailing.
+      operationId: getMailing
+      parameters:
+        - name: mailing_id
+          in: path
+          description: Mailing ID of the mailing you want to cancel
+          required: true
+          schema:
+            $ref: '#/components/schemas/MailingID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mailing'
+        '404':
+          description: Mailing not found
+      security:
+        - ApiTokenAuth: []
+  /mailings/{mailing_id}/confirm:
+    post:
+      tags:
+        - Mailing
+      summary: Confirm a Mailing
+      description: |
+        Sets the status of a mailing from `Awaiting Confirmation` to `Ready for Sending`
+
+        Once a mailing is in the 'Ready for Sending' the user must login to the web portal to review and send the mailing.
+        Triggering the actual send cannot be done directly from the API.
+      operationId: confirmMailing
+      parameters:
+        - name: mailing_id
+          in: path
+          description: Mailing ID of the mailing you want to confirm
+          required: true
+          schema:
+            $ref: '#/components/schemas/MailingID'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Still awaiting letters for mailing
+        '404':
+          description: Mailing not found
+      security:
+        - ApiTokenAuth: []
+  /mailings/{mailing_id}/cancel:
+    post:
+      tags:
+        - Mailing
+      summary: Cancel a Mailing
+      description: |
+        Sets the status of a mailing to cancelled so that it cannot be sent.
+
+        This can be done upto 3 hours after the sending has been triggered, when the mailing is in 'Pending Printing' status
+      operationId: cancelMailing
+      parameters:
+        - name: mailing_id
+          in: path
+          description: Mailing ID of the mailing you want to cancel
+          required: true
+          schema:
+            $ref: '#/components/schemas/MailingID'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Mailing not found
+      security:
+        - ApiTokenAuth: []
+  /mailings/{mailing_id}/letters:
+    post:
+      tags:
+        - Letter
+      summary: Add a Letter
+      description: |
+        This adds a single letter to a mailing that must have been created previously.
+
+        Requests to this resource are idempotent, so if you submit an identical request multiple times then it will assume
+        that is a single letter, it won't send duplicates. If you submit the same PDF file, with the same recipient info
+        then you will get a `409 - Letter has already been added` response.
+      operationId: addLetter
+      parameters:
+        - name: mailing_id
+          in: path
+          description: Mailing ID of the mailing you want to add a letter to
+          required: true
+          schema:
+            $ref: '#/components/schemas/MailingID'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LetterResponse'
+        '409':
+          description: Letter has already been added
+        '404':
+          description: Mailing not found
+        '400':
+          description: |
+            | Error Message           | Description                                                                        |
+            | ----------------------- | ---------------------------------------------------------------------------------- |
+            | PDF file cannot be read | Please ensure that you have Base64 encoded the pdf file contents.                  |
+            | Postcode Invalid        | Postcode must match a valid UK or IE postcode                                      |
+            | Missing properties      | The following properties must be supplied: name, address_line_1, postcode, pdf_file|
+            | Mailing cancelled       | You cannot add letters to a mailing that has a cancelled status                    |
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Letter'
+        description: Mailing payload
+        required: true
+      security:
+        - ApiTokenAuth: []
+    get:
+      tags:
+        - Letter
+      summary: View letters for a mailing
+      description: |
+        Returns information about the letters of a given mailing
+      operationId: getLetters
+      parameters:
+        - name: mailing_id
+          in: path
+          description: ID of the Mailing the letters belong to
+          required: true
+          schema:
+            $ref: '#/components/schemas/MailingID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LetterResponse'
+        '404':
+          description: Mailing not found
+      security:
+        - ApiTokenAuth: []
+components:
+  schemas:
+    Mailing:
+      type: object
+      properties:
+        mailing_id:
+          description: Unqiue identifier for the mailing that has been created, used in
+          type: string
+          format: uuid
+          example: bb37eff0-e1f0-4a66-92d7-603019b784f4
+        block:
+          description: The name of the block or development that the mailing is for
+          type: string
+          example: Twin House Residents Limited
+        expected_letters:
+          description: The number of letters specified when the mailing was created
+          type: number
+          example: 25
+        letters_received:
+          description: |
+            The number of letters successfully received via [/mailings/{mailing_id}/letters](/#operation/addLetter)
+          type: number
+          example: 0
+        status:
+          description: Status of the mailing
+          type: string
+          example: Awaiting Letters
+        date_created:
+          description: Date the mailing was created
+          format: date
+          type: string
+          example: 2022-06-23
+        date_sent:
+          description: Date the mailing was sent
+          format: date
+          type: string
+          nullable: true
+          example: null
+    MailingNew:
+      type: object
+      properties:
+        mailing_id:
+          description: Unqiue identifier for the mailing that has been created, used in
+          type: string
+          format: uuid
+          example: bb37eff0-e1f0-4a66-92d7-603019b784f4
+        block:
+          description: The name of the block or development that the mailing is for
+          type: string
+          example: Twin House Residents Limited
+        expected_letters:
+          description: The number of letters specified when the mailing was created
+          type: number
+          example: 25
+        letters_received:
+          description: |
+            The number of letters successfully received via [/mailings/{mailing_id}/letters](/#operation/addLetter)
+          type: number
+          example: 0
+        status:
+          description: Status of the mailing
+          type: string
+          example: Awaiting Letters
+        date_created:
+          description: Date the mailing was created
+          format: date
+          type: string
+          example: 2022-06-23
+        date_sent:
+          description: Date the mailing was sent
+          format: date
+          type: string
+          nullable: true
+          example: null
+    MailingID:
+      description: Mailing ID of the mailing you want to add a letter to
+      type: string
+      format: uuid
+      example: bb37eff0-e1f0-4a66-92d7-603019b784f4
+    MailingPrinting:
+      type: object
+      properties:
+        mailing_id:
+          description: Unqiue identifier for the mailing that has been created, used in
+          type: string
+          format: uuid
+          example: bb37eff0-e1f0-4a66-92d7-603019b784f4
+        block:
+          description: The name of the block or development that the mailing is for
+          type: string
+          example: Twin House Residents Limited
+        expected_letters:
+          description: The number of letters specified when the mailing was created
+          type: number
+          example: 25
+        letters_received:
+          description: |
+            The number of letters successfully received via [/mailings/{mailing_id}/letters](/#operation/addLetter)
+          type: number
+          example: 24
+        status:
+          description: Status of the mailing
+          type: string
+          example: Awaiting Letters
+        date_created:
+          description: Date the mailing was created
+          format: date
+          type: string
+          example: 2022-06-23
+        date_sent:
+          description: Date the mailing was sent
+          format: date
+          type: string
+          nullable: true
+          example: 2022-10-24
+    Letter:
+      type: object
+      properties:
+        recipient_name:
+          description: The name of person(s) that the letter is being sent to, this will appear on the outside of the envelope
+          type: string
+          example: Mrs Jennifer Griffin
+        address_line_1:
+          description: First line of the addresss
+          type: string
+          example: Unit 56
+        address_line_2:
+          description: Second line of the addresss
+          type: string
+          example: Orchard Business Park
+        address_line_3:
+          description: Third line of the addresss
+          type: string
+          example: Folklaw Road
+        address_line_4:
+          description: Fourth line of the addresss
+          type: string
+          example: Oxford
+        county:
+          description: County
+          type: string
+          example: Oxfordshire
+        postcode:
+          description: Postcode
+          type: string
+          example: Oxfordshire
+        country:
+          description: Country
+          type: string
+          example: United Kingdom
+        pdf_file:
+          description: Base64 encoded PDF file contents of the letter to be sent
+          format: date
+          type: string
+          example: VGhlIGNvbnRlbnRzIG9mIGEgUERGIGZpbGU=
+      required:
+        - name
+        - address_line_1
+        - postcode
+        - pdf_file
+    LetterResponse:
+      type: object
+      properties:
+        id:
+          description: ID of the Letter
+          type: string
+          format: uuid
+          example: bb37eff0-e1f0-4a66-92d7-603019b784f4
+        name:
+          description: The name of person(s) that the letter is being sent to, this will appear on the outside of the envelope
+          type: string
+          example: Mrs Jennifer Griffin
+        address_line_1:
+          description: First line of the addresss
+          type: string
+          example: Unit 56
+        address_line_2:
+          description: Second line of the addresss
+          type: string
+          example: Orchard Business Park
+        address_line_3:
+          description: Third line of the addresss
+          type: string
+          example: Folklaw Road
+        address_line_4:
+          description: Fourth line of the addresss
+          type: string
+          example: Oxford
+        county:
+          description: County
+          type: string
+          example: Oxfordshire
+        postcode:
+          description: Postcode
+          type: string
+          example: Oxfordshire
+        country:
+          description: Country
+          type: string
+          example: United Kingdom
+        time_created:
+          description: Date and time the letter was added to the system
+          type: string
+          format: datetime
+          example: 2021-06-01 18:56:02
+        pdf_file_id:
+          description: ID of the PDF file containing the letter
+          format: date
+          type: string
+          example: bb37eff0-e1f0-4a66-92d7-603019b784f4
+  securitySchemes:
+    ApiTokenAuth:
+      type: apiKey
+      in: header
+      name: "X-AUTH-TOKEN"
+      description: |
+        Authentication is done via simple token based authentication. When making requested to the API include your
+        supplied API authentication token in a header named `X-AUTH-TOKEN`.
